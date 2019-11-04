@@ -1,0 +1,22 @@
+0,bg : bulgaria
+1,cs : Czech
+2,da : Denmark
+3,de : German
+4,el : Greek
+5,en : english
+6,es : Spain
+7,et : estonia
+8,fi : Finland
+9,fr : france
+10,hu : hungary
+11,it : italy
+12,lt : litva
+13,lv : latvia
+14,nl : Netherlands
+15,pl : Poland
+16,pt : Portugal
+17,ro : romania
+18,sk : slovak
+19,sl : slovenia
+20,sv : Switzerland
+

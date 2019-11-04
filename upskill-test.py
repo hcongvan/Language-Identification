@@ -16,7 +16,7 @@ n = data.shape[0]
 corpus = ''
 # for i in data:
 #     corpus = corpus.join(i[1])
-vector = CountVectorizer(analyzer='char',encoding='latin-1',ngram_range=(2,2))
+vector = CountVectorizer(analyzer='char',encoding='latin-1',ngram_range=(1,1))
 language_train = []
 language_test = []
 string = []
@@ -31,9 +31,9 @@ for i,v in enumerate(data):
     corpus = ''.join(X_train)
     v[1] = corpus
 
-    # vector.fit([corpus.replace(' ','')])
-    # print(len(vector.vocabulary_))
-    # vocabulary[i] = vector.vocabulary_
+    vector.fit([corpus.replace(' ','')])
+    print(len(vector.vocabulary_))
+    vocabulary[i] = vector.vocabulary_
     # y = vector.transform([corpus.replace(' ','')])
     # language_train[i] = np.array([corpus,v[0]]).reshape([1,2])
 
@@ -43,22 +43,20 @@ m = len(vector.vocabulary_)
 for i,v in enumerate(data):
     transform = vector.transform([v[1]])
     _q = np.zeros(m)
-    for k,data in zip(transform.indices,transform.data):
-            _q[k] = data
+    _q[transform.indices] = transform.data
     language_train.append(np.array([transform,_q,v[0]]))
 
 for i,v in enumerate(X_test):
     corpus = ''.join(v)
     transform = vector.transform([corpus.replace(' ','')])
     _p = np.zeros(m)
-    for k,data in zip(transform.indices,transform.data):
-            _p[k] = data
+    _p[transform.indices] = transform.data
     language_test.append(np.array([transform,_p,y_test[i]]))
 prediction = np.zeros(n)
-for i in range(n):
+for i,test in enumerate(language_test):
     t = np.zeros(n)
-    for j in range(n):
-        t[j] = sklearn.metrics.mutual_info_score(language_test[i][1],language_train[j][1])
+    for j,train in enumerate(language_train):
+        t[j] = sklearn.metrics.mutual_info_score(test[1],train[1])
     prediction[i] = np.argmin(t)
     
 # for i,v in enumerate(zip(X_test,y_test)):
