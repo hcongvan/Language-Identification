@@ -18,8 +18,18 @@ warnings.filterwarnings('ignore')
 
 # %%
 def removeNoise(data):
-    data['text'] = data['text'].str.replace('[=<>"[]{}/:-;.,\'\(\)%]', ' ')
-    data['text'] = data['text'].str.replace('[0-9]', ' ')
+    data['text'] = data['text'].str.replace('[bdfhklt#$&%A-Z0-9*ß]', 'A')
+    data['text'] = data['text'].str.replace('[c]', 'e')
+    data['text'] = data['text'].str.replace('[çpqy]', 'g')
+    data['text'] = data['text'].str.replace('[áàâèéêîñôùû]', 'i')
+    data['text'] = data['text'].str.replace('[amorsuvwz]', 'x')
+    data['text'] = data['text'].str.replace('[¡:]', ':')
+    data['text'] = data['text'].str.replace('[?]', '!')
+    data['text'] = data['text'].str.replace('[~]', '-')
+    data['text'] = data['text'].str.replace('[<>\[\]\(\)\{\}/]', '|')
+    data['text'] = data['text'].str.replace('["]', '\'')
+    # data['text'] = data['text'].str.replace('[=<>"[]{}/:-;.,\'\(\)%]', ' ')
+    # data['text'] = data['text'].str.replace('[0-9]', ' ')
     return(data)
 
 # %% [markdown]
@@ -34,9 +44,18 @@ def removeNoise(data):
 def KLdivergence(p,q):
     if len(p) != len(q):
         return False
-    p = p/np.sum(p)
-    q = q/np.sum(q)
-    return np.sum(p*np.log(p/q))
+    norm_p = np.linalg.norm(p)
+    norm_q = np.linalg.norm(q)
+    if norm_p != 0: 
+        p = p/norm_p
+    if norm_q != 0:
+        q = q/norm_q
+    _div = p/q
+    c = np.log(_div)
+    t = p*c
+    g = np.sum(t)
+    kl = np.sum(p*np.log(p/q))
+    return kl
 
 # %% [markdown]
 # <h2>Get data train</h2> 
@@ -54,7 +73,7 @@ data.head()
 # - Select random line for test
 
 # %%
-test = pd.read_csv('europarl.csv',sep=';', error_bad_lines=False)
+test = pd.read_csv('europarl.csv',sep=';', error_bad_lines=False,warn_bad_lines=False)
 test = removeNoise(test)
 test= test.reindex(np.random.permutation(test.index))
 test.head()
@@ -108,7 +127,7 @@ labels_test = test[:,0]
 # %%
 language_train = []
 for i,v in enumerate(data):
-    vector = CountVectorizer(analyzer='char',encoding='latin-1',ngram_range=(2,2))
+    vector = TfidfVectorizer(analyzer='char',encoding='latin-1',ngram_range=(2,2))
     y = vector.fit_transform([v[1].replace(' ','')])
     language_train.append(np.array([vector,y]))
 
@@ -140,6 +159,7 @@ for i,(_,data_test) in enumerate(test):
             _q[transform_y.indices] = transform_y.data
             _p = np.zeros(k)
             _p[transform.indices] = transform.data
+            # t[j] = KLdivergence(_p,_q)
             t[j] = scipy.stats.entropy(_p,_q)
     predict_label.append(labels[np.argmin(t)])
 
